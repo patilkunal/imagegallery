@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <base href="./"/>
+  <title>Image Gallery</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/jstree-style.min.css">
+  <script src="js/jquery.min.js"></script>
+  <script src="js/bootstrap.min.js"></script>
+  <script src="js/jstree.min.js"></script>
+</head>
+<body>
+   <!-- Fixed navbar -->
+   <nav class="navbar navbar-inverse navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+          <span class="sr-only">Toggle navigation</span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">Image gallery</a>
+      </div>
+      <div id="navbar" class="navbar-collapse collapse">
+        <ul class="nav navbar-nav">
+          <li class="dropdown active">
+            <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Galleries<span class="caret"></span></a>
+            <ul class="dropdown-menu">
+              <li><a href="#">London Trip</a></li>
+              <li role="separator" class="divider"></li>
+            </ul>
+          </li>
+        </ul>
+      </div><!--/.nav-collapse -->
+    </div>
+  </nav>
+  <div class="pageheader">&nbsp;</div>
+<div class="container-fluid" style="margin-top: 50px;">
+  <div class="row">
+      <div class="col-md-2">
+          Folder Navigation
+          <div id="jstree_navigation"></div>
+          <div id="event_result"></div>
+      </div>
+
+      <div class="col-md-10">
+      <div id="myCarousel" class="carousel slide">
+        <!-- Wrapper for slides -->
+        <div class="carousel-inner">
+          <div class="item active" style="background-image: url('images/loader.gif'); background-position: center; background-size: 50%;">
+            <img id="ssimage" src="images/loader.gif" alt="Slide Show Image" style="width:100%;">
+          </div>
+        </div>
+
+        <!-- Left and right controls -->
+        <a class="left carousel-control" href="#myCarousel" data-slide="prev" onclick="cycle('prev')">
+          <span class="glyphicon glyphicon-chevron-left"></span>
+          <span class="sr-only">Previous</span>
+        </a>
+        <a class="right carousel-control" href="#myCarousel" data-slide="next" onclick="cycle('next')">
+          <span class="glyphicon glyphicon-chevron-right"></span>
+          <span class="sr-only">Next</span>
+        </a>
+      </div>
+      </div>
+  </div>
+</div>
+
+<script>
+  const folderJson = { core : {
+    data : [
+       { "id" : "ajson1", "parent" : "#", "text" : "Simple root node" },
+       { "id" : "ajson2", "parent" : "#", "text" : "Root node 2", "state": {"disabled":true }},
+       { "id" : "ajson3", "parent" : "ajson2", "text" : "Child 1" },
+       { "id" : "ajson4", "parent" : "ajson2", "text" : "Child 2" },
+      ]
+    } };
+
+    // Image array (need to fetch this from the REST API based on current folder)
+    const imageArr = ["images/5bfad15a7fd24d448a48605baf52655a5bbe5a71.jpeg",
+          "images/66cf5094908491e69d8187bcf934050a4800b37f.jpeg", 
+          "images/b7d624354d5fa22e38b0ab1f9b905fb08ccc6a05.jpeg"];
+
+    let idx = 0;
+    const imageEle = $("#myCarousel > .carousel-inner > .item > #ssimage");
+    //Load the first image from the image array
+    jQuery(imageEle).attr("src", imageArr[idx]);
+
+    /*
+      Function to handle prev and next image navigation in carousel
+      where = 'prev' or 'next'
+    */
+    function cycle(where) {
+        if(where === 'next') {
+            idx++
+        } else {
+            idx--;
+        }
+        if(idx < 0) idx = imageArr.length-1;
+        if(idx >= imageArr.length) idx = 0;
+        jQuery(imageEle).attr("src", imageArr[idx]);
+        //console.log(imageArr[idx]);
+    }
+
+    /*
+      Handle the Folder navigation
+    */
+    const handleFolderNav = function (e, data) {
+                var i, j, r = [];
+                for(i = 0, j = data.selected.length; i < j; i++) {
+                  r.push(data.instance.get_node(data.selected[i]).text);
+                }
+                $('#event_result').html('Selected: ' + r.join(', '));
+    };
+
+
+    /*
+      Jquery function called after document is completely loaded
+    */
+    $(document).ready(function() {
+        console.log("document is ready");
+        $('#jstree_navigation').on('changed.jstree', handleFolderNav).jstree(folderJson); 
+
+        $('#myCarousel').on('slide.bs.carousel', function () {
+            console.log("The slide happened");
+            
+        });
+    });
+
+
+</script>
+</body>
+</html>
