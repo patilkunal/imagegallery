@@ -16,15 +16,26 @@ public class FileService {
     @Value("${imagegallery.basedirectory:./}")
     private String baseDirectory;
 
-    public List<Folder> getFolders(String parent) throws IOException {
+    public Folder getRootFolder() throws IOException {
+        Folder root = new Folder();
+        root.id = "ROOT";
+        root.text = "ROOT";
+        root.children = getFolders("ROOT",null);
+        return root;
+    }
+
+    public List<Folder> getFolders(String parentId, String name) throws IOException {
         Path folderpath;
-        if(parent == null) {
+        if(name == null) {
             folderpath = Path.of(baseDirectory);
         } else {
-            folderpath = Path.of(baseDirectory, parent);
+            folderpath = Path.of(baseDirectory, name);
         }
-        return Files.find(folderpath, 1, (path, attrs) -> attrs.isDirectory())
-                .map(Folder::create).collect(Collectors.toList());
+        //Skip 1 - which is the folder itself
+        List<Folder> folders = Files.find(folderpath, 1, (path, attrs) -> attrs.isDirectory())
+                .skip(1).map(Folder::create).collect(Collectors.toList());
+        folders.forEach(f -> f.parent = parentId);
+        return folders;
     }
 
     public List<String> getFiles(String parent) throws IOException {

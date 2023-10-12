@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.inovisionsoftware.imagegallery.model.Folder;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 
 @RestController
@@ -22,13 +23,20 @@ public class FoldersController {
     }
 
     @GetMapping()
-    public List<Folder> getRootFolders() throws IOException {
-        return fileService.getFolders(null);
+    public List<Folder> getRootFolder() throws IOException {
+        Folder root = new Folder();
+        root.parent = "#";
+        root.id = "ROOT";
+        root.text = "ROOT";
+        List<Folder> folders = new ArrayList<>();
+        folders.add(root);
+        folders.addAll(fileService.getFolders("ROOT", null));
+        return folders;
     }
 
     @GetMapping("/{folder}")
     public List<Folder> getFolders(@PathVariable("folder") String folder) throws IOException {
-        return fileService.getFolders(folder);
+        return fileService.getFolders(folder, folder);
     }
 
     @GetMapping("/{folder}/files")
