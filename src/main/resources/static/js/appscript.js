@@ -1,40 +1,9 @@
-  const folderJson = { core : {
-    data : [
-       { "id" : "ROOT", "parent" : "#", "text" : "ROOT"},
-       {"id":"child1", "parent": "ROOT", "text": "child1"}
-       
-      ]
-    } };
-   const folders = {
-    "core" : {
-        "data" : {"id":"ROOT","text":"ROOT","parent":"#","directory":false,"url":null,"state":null,"children":[{"id":"Opyland","text":"Opyland","parent":"ROOT","directory":true,"url":"/api/folders/Opyland","state":{"disabled":false},"children":null},{"id":"gauri","text":"gauri","parent":"ROOT","directory":true,"url":"/api/folders/gauri","state":{"disabled":false},"children":null},{"id":"Webcam","text":"Webcam","parent":"ROOT","directory":true,"url":"/api/folders/Webcam","state":{"disabled":false},"children":null},{"id":"Ishani","text":"Ishani","parent":"ROOT","directory":true,"url":"/api/folders/Ishani","state":{"disabled":false},"children":null},{"id":"Canon","text":"Canon","parent":"ROOT","directory":true,"url":"/api/folders/Canon","state":{"disabled":true},"children":null},{"id":"MomDadAnniverysary","text":"MomDadAnniverysary","parent":"ROOT","directory":true,"url":"/api/folders/MomDadAnniverysary","state":{"disabled":true},"children":null},{"id":"Poses","text":"Poses","parent":"ROOT","directory":true,"url":"/api/folders/Poses","state":{"disabled":false},"children":null},{"id":"Hande","text":"Hande","parent":"ROOT","directory":true,"url":"/api/folders/Hande","state":{"disabled":false},"children":null}]}
-    }
-   }
-   const ajaxJson = { core: {
-    multiple: false,
-    data: {
-        url: function(node) {
-            console.log('url function called with node ' + JSON.stringify(node));
-            return node.id === '#' ? '/api/folders' : '/api/folders/' + node.id;
-        }
-    }
-   } };
-/*
-,
-        data: function(node) {
-            console.log('data function called with node ' + JSON.stringify(node));
-            return { 'id': node.id, 'text': 'MYTEXT' };
-        }
-*/
-    // Image array (need to fetch this from the REST API based on current folder)
-    var imageArr = ["images/5bfad15a7fd24d448a48605baf52655a5bbe5a71.jpeg",
-          "images/66cf5094908491e69d8187bcf934050a4800b37f.jpeg",
-          "images/b7d624354d5fa22e38b0ab1f9b905fb08ccc6a05.jpeg"];
 
+    // Image array (need to fetch this from the REST API based on current folder)
+    var imageArr = [];
     let idx = 0;
     const imageEle = $("#myCarousel > .carousel-inner > .item > #ssimage");
     //Load the first image from the image array
-    jQuery(imageEle).attr("src", imageArr[idx]);
 
     /*
       Function to handle prev and next image navigation in carousel
@@ -49,23 +18,72 @@
         if(idx < 0) idx = imageArr.length-1;
         if(idx >= imageArr.length) idx = 0;
         jQuery(imageEle).attr("src", imageArr[idx]);
-        //console.log(imageArr[idx]);
     }
 
+    function getFiles(path) {
+            jQuery.get('/api/files/' + path , function(data) {
+                for(var i=0; i < data.length; i++) {
+                    data[i] = ( (path !== null &&  path.length > 0) ?
+                        "/" + path : "") + "/" + encodeURIComponent(data[i]) ;
+                }
+                idx = 0;
+                imageArr = data;
+                jQuery(imageEle).attr("src", imageArr[idx]);
+            });
+    }
 
+    /*
+      Handle the Folder navigation
+    */
+    const handleFolderNav = function (e, data) {
+                var i, j, r = [];
+                console.log("Selected data: " + data.selected[0]);
+                var selected = data.instance.get_node(data.selected[0]).original;
+                console.log("Selected: " + JSON.stringify(selected));
+                $('#event_result').html('Showing Folder: ' + selected.relativePath);
+                getFiles(selected.relativePath);
+    };
+
+    function buildMenu() {
+        // TODO = hide menu after click
+        jQuery.get('api/folders', function(data) {
+            for(var i=0; i < data.length; i++) {
+                $('#dropdownul').append('<li><a href="#" data-toggle="collapse" data-target="#navbar" onclick=getFiles("' + data[i].relativePath + '")>' + data[i].text +  '</a></li>');
+            }
+        });
+        getFiles("");
+    }
+
+    // For JS Tree (which we are not using for now)
+    const ajaxJson = { core: {
+    multiple: false,
+    data: {
+        url: function(node) {
+            console.log('url function called with node ' + JSON.stringify(node));
+            return node.id === '#' ? '/api/folders' : node.url;
+        }
+    }
+    } };
 
     /*
       Jquery function called after document is completely loaded
     */
     $(document).ready(function() {
+        jQuery(imageEle).attr("src", 'images/loader.gif');
         console.log("document is ready");
-        $('#jstree_navigation').on('changed.jstree', handleFolderNav).jstree(ajaxJson);
+        //We are not using JS Tree navigation, but we can use it later
+       // $('#jstree_navigation').on('changed.jstree', handleFolderNav).jstree(ajaxJson);
 
         $('#myCarousel').on('slide.bs.carousel', function () {
             console.log("The slide happened");
 
         });
+        buildMenu();
     });
+
+
+// UN-USED
+/*
 
 function getRootFolders() {
     return jQuery.get("/api/folders", function(data) {
@@ -79,21 +97,16 @@ function getChildFolders(id) {
     });
 }
 
-/*
-  Handle the Folder navigation
-*/
-const handleFolderNav = function (e, data) {
-            var i, j, r = [];
-            for(i = 0, j = data.selected.length; i < j; i++) {
-              r.push(data.instance.get_node(data.selected[i]).text);
-            }
-            $('#event_result').html('Selected: ' + r.join(', '));
-            jQuery.get('/api/folders/' + r[0] + '/files', function(data) {
-                for(var i=0; i < data.length; i++) {
-                    data[i] = "/" + r[0] + "/" + data[i];
-                }
-                idx = 0;
-                imageArr = data;
-                jQuery(imageEle).attr("src", imageArr[idx]);
-            });
-};
+  const folderJson = { core : {
+    data : [
+       { "id" : "ROOT", "parent" : "#", "text" : "ROOT"},
+       {"id":"child1", "parent": "ROOT", "text": "child1"}
+
+      ]
+    } };
+   const folders = {
+    "core" : {
+        "data" : {"id":"ROOT","text":"ROOT","parent":"#","directory":false,"url":null,"state":null,"children":[{"id":"Opyland","text":"Opyland","parent":"ROOT","directory":true,"url":"/api/folders/Opyland","state":{"disabled":false},"children":null},{"id":"gauri","text":"gauri","parent":"ROOT","directory":true,"url":"/api/folders/gauri","state":{"disabled":false},"children":null},{"id":"Webcam","text":"Webcam","parent":"ROOT","directory":true,"url":"/api/folders/Webcam","state":{"disabled":false},"children":null},{"id":"Ishani","text":"Ishani","parent":"ROOT","directory":true,"url":"/api/folders/Ishani","state":{"disabled":false},"children":null},{"id":"Canon","text":"Canon","parent":"ROOT","directory":true,"url":"/api/folders/Canon","state":{"disabled":true},"children":null},{"id":"MomDadAnniverysary","text":"MomDadAnniverysary","parent":"ROOT","directory":true,"url":"/api/folders/MomDadAnniverysary","state":{"disabled":true},"children":null},{"id":"Poses","text":"Poses","parent":"ROOT","directory":true,"url":"/api/folders/Poses","state":{"disabled":false},"children":null},{"id":"Hande","text":"Hande","parent":"ROOT","directory":true,"url":"/api/folders/Hande","state":{"disabled":false},"children":null}]}
+    }
+   }
+   */

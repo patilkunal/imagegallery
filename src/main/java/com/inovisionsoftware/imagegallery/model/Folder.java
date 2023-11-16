@@ -12,6 +12,7 @@ public class Folder {
     public String parent = "#";
     public boolean directory;
     public String url;
+    public String relativePath = "";
     public State state;
     public List<Folder> children;
 
@@ -21,6 +22,7 @@ public class Folder {
         f.text = path.toFile().getName();
         f.id = f.text;
         f.url = "/api/folders/" + f.text;
+        f.parent = path.getParent().toString();
         //TODO: disabled = no image files in the directory
         f.state = new State(!FileUtils.hasImageFiles(path));
         return f;

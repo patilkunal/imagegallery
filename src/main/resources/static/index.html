@@ -28,9 +28,7 @@
         <ul class="nav navbar-nav">
           <li class="dropdown active">
             <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Galleries<span class="caret"></span></a>
-            <ul class="dropdown-menu">
-              <li><a href="#">London Trip</a></li>
-              <li role="separator" class="divider"></li>
+            <ul class="dropdown-menu" id="dropdownul">
             </ul>
           </li>
         </ul>
@@ -41,17 +39,16 @@
 <div class="container-fluid" style="margin-top: 50px;">
   <div class="row">
       <div class="col-md-2">
-          Folder Navigation
           <div id="jstree_navigation"></div>
-          <div id="event_result"></div>
+          <div id="event_result" style="font-weight:bold"></div>
       </div>
 
       <div class="col-md-10">
       <div id="myCarousel" class="carousel slide">
         <!-- Wrapper for slides -->
         <div class="carousel-inner">
-          <div class="item active" style="background-image: url('images/loader.gif'); background-position: center; background-size: 50%;">
-            <img id="ssimage" src="images/loader.gif" alt="Slide Show Image" style="width:100%;">
+          <div class="item active" align="center">
+            <img id="ssimage" src="images/loader.gif" alt="Slide Show Image" style="width:auto;max-height:700px;">
           </div>
         </div>
 
