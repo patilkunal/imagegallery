@@ -44,11 +44,53 @@
                 getFiles(selected.relativePath);
     };
 
+    var menuItems = [];
+
+    function makeObject(node) {
+        var menuhtml = '<li id="menu_' + node.text + '"><a href="#" data-toggle="collapse" data-target="#navbar" onclick=getFiles("' + node.relativePath + '")>' + node.text +  '</a></li>';
+        return {
+            object: node,
+            text: node.text,
+            modified: false,
+            children: [],
+            html:  menuhtml
+        }
+    }
     function buildMenu() {
         // TODO = hide menu after click
         jQuery.get('api/folders', function(data) {
             for(var i=0; i < data.length; i++) {
-                $('#dropdownul').append('<li><a href="#" data-toggle="collapse" data-target="#navbar" onclick=getFiles("' + data[i].relativePath + '")>' + data[i].text +  '</a></li>');
+                var curr = data[i];
+                var menuItem = null;
+                //console.log("Parent for " + curr.text + " is " + curr.parent);
+                if(curr.parent === 'ROOT') {
+                    menuItem = makeObject(curr);
+                    menuItems.push(menuItem);
+                    $('#dropdown_root').append(menuItem.html);
+                    console.log("Add top level menu " + menuItem.text);
+                } else {
+                    var parentMenu = menuItems.find((e) => e.text === curr.parent);
+                    if(parentMenu != null) {
+                        if(!parentMenu.modified) {
+                            var htmlele = jQuery('#menu_' + parentMenu.text);
+                            htmlele.addClass('dropdown-submenu');
+                            htmlele.remove
+                            htmlele.append('<ul class="dropdown-menu" id="dropdown_' + parentMenu.text + '">' +
+                                '<li id="menu_' + curr.text + '"><a href="#" data-toggle="collapse" data-target="#navbar" onclick=getFiles("' + curr.relativePath + '")>' + curr.text +  '</a></li></ul>');
+                            parentMenu.modified = true;
+                            console.log("Add first child menu " + curr.text + "  to " + parentMenu.text);
+                        } else {
+                           var htmlele = jQuery('#dropdown_' + parentMenu.text);
+                           htmlele.append('<li id="menu_' + curr.text + '"><a href="#" data-toggle="collapse" data-target="#navbar" onclick=getFiles("' + curr.relativePath + '")>' + curr.text +  '</a></li>');
+                            console.log("Add another child menu" + curr.text + " to " + parentMenu.text);
+                        }
+                        parentMenu.children.push(makeObject(curr));
+                    }
+                }
+                //$('#dropdown_root').append('<li><a href="#" data-toggle="collapse" data-target="#navbar" onclick=getFiles("' + data[i].relativePath + '")>' + data[i].text +  '</a></li>');
+                //if(curr.html !== undefined) {
+                //    $('#dropdown_root').append(curr.html);
+                //}
             }
         });
         getFiles("");
